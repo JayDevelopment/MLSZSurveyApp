@@ -24,6 +24,8 @@ $survey = $nodes[0];
 
 
 	<?php
+	session_start();
+	if(!isset($_SESSION['test'])) { $_SESSION['test'] = []; }
 	if(isset($_REQUEST["proceed_submit"]))
 	{
 
@@ -147,7 +149,7 @@ $question_counter=0;
 			if($question_items[0]=="Text")
 			{
 			?>
-				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) echo strip_tags($_POST["survey_question_".$question_counter]);?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
+				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) echo strip_tags($_POST["survey_question_".$question_counter]);?>" type="text" class="form-control survey-field border-input"  placeholder="I'm what you need :)"/>
 			<?php
 			}
 			else
@@ -206,15 +208,26 @@ $question_counter=0;
 		}
 		$question_counter++;
 		}
+
+		if(isset($_POST["survey_question_0"])) {
+			$_SESSION["survey_question_0"] = $_POST["survey_question_0"];
+		}
+
+		//echo $_SESSION['survey_question_0'];
+
 		?>
-	<a style="inline"href="#">&laquo; Previous</a>
-	<a style="inline"href="#"> Next &raquo;</a>
+<?php $end_survey = count($s_questions); ?>
+
+	<a style="inline;<?php /*TODO:this may have security issues*/ if($_GET['question'] == 1) echo 'display:none'?>" class="btn btn-default" href="#">&laquo; Previous</a>
+	<a style="inline;<?php if($_GET['question'] == $end_survey) echo 'display:none'?>" class="btn btn-default" href="#"> Next &raquo;</a>
+
 		<div class="clearfix"></div>
-<?php if ($_GET['question'] > count($questions)) { ?>
-	<?php
-		if($survey->anonymous == "0")
-		{
-	?>
+<?php
+if ($_GET['question'] == $end_survey) { ?>
+<?php
+if($survey->anonymous == "0") {
+
+?>
 			<hr/>
 
 			<i><?php echo $this->texts["your_details"];?></i>
@@ -239,7 +252,7 @@ $question_counter=0;
 
 			<br/>
 		<?php
-}
+	}
 		?>
 
 		<?php
