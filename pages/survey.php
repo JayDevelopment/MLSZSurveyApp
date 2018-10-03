@@ -209,21 +209,32 @@ $question_counter=0;
 		$question_counter++;
 		}
 
-		if(isset($_POST["survey_question_0"])) {
-			$_SESSION["survey_question_0"] = $_POST["survey_question_0"];
-		}
-
-		//echo $_SESSION['survey_question_0'];
+		// if(isset($_POST["survey_question_".$question_counter])) {
+		// 	$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
+		// }
+		//
+		// echo $_SESSION['survey_question_'.$question_counter];
 
 		?>
-<?php $end_survey = count($s_questions); ?>
+<?php $end_survey = count($s_questions);
+			$current_question = $_GET['question'];
+?>
 
-	<a style="inline;<?php /*TODO:this may have security issues*/ if($_GET['question'] == 1) echo 'display:none'?>" class="btn btn-default" href="#">&laquo; Previous</a>
-	<a style="inline;<?php if($_GET['question'] == $end_survey) echo 'display:none'?>" class="btn btn-default" href="#"> Next &raquo;</a>
-	<div><p style="float:right;<?php if($_GET['question'] == $end_survey)echo 'display:none'?>"><i>question <?php echo $_GET['question']?> of <?php echo $end_survey -1?></i></p></div>
+	<a style="inline;<?php
+	if($_GET['question'] == '1') echo 'display:none'?>
+	" class="btn btn-default" href="./index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question -1)?>">&laquo; Previous</a>
+	<a style="inline;<?php
+	 if($current_question == $end_survey) echo 'display:none'?>
+	 " class="btn btn-default" href="./index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question +1)?>">
+	 <?php $next_finish = ($current_question != $end_survey-1) ? 'Next' : 'Finish'; echo $next_finish?>
+	 &raquo;</a>
+	<div><p style="float:right;<?php
+	 if($current_question == $end_survey)echo 'display:none'?>
+	 "><i>question <?php echo $current_question?> of <?php echo $end_survey -1?></i></p></div>
 		<div class="clearfix"></div>
+
 <?php
-if ($_GET['question'] == $end_survey) { ?>
+if ($current_question == $end_survey) { ?>
 <?php
 if($survey->anonymous == "0") {
 
