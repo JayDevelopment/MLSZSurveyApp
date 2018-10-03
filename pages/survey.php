@@ -220,7 +220,7 @@ $question_counter=0;
 
 	<a style="inline;<?php /*TODO:this may have security issues*/ if($_GET['question'] == 1) echo 'display:none'?>" class="btn btn-default" href="#">&laquo; Previous</a>
 	<a style="inline;<?php if($_GET['question'] == $end_survey) echo 'display:none'?>" class="btn btn-default" href="#"> Next &raquo;</a>
-
+	<div><p style="float:right;<?php if($_GET['question'] == $end_survey)echo 'display:none'?>"><i>question <?php echo $_GET['question']?> of <?php echo $end_survey -1?></i></p></div>
 		<div class="clearfix"></div>
 <?php
 if ($_GET['question'] == $end_survey) { ?>
