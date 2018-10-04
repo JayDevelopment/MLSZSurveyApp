@@ -112,13 +112,15 @@ $survey = $nodes[0];
 	<?php
 	}
 
-
+	$s_questions=explode(";;;",stripslashes($survey->questions));
 	if($show_survey_form)
 	{
 	?>
-		<form action="index.php" method="post"   enctype="multipart/form-data">
+		<form action="<?php if($_GET['question'] == count($s_questions)) echo 'index.php'?>" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="page" value="survey"/>
+		<?php if($_GET['question'] == count($s_questions)) {  ?>
 		<input type="hidden" name="proceed_submit" value="1"/>
+	<?php } ?>
 		<input type="hidden" name="id" value="<?php echo $id;?>"/>
 
 
@@ -131,7 +133,6 @@ $survey = $nodes[0];
 		<br/>
 
 		<?php
-$s_questions=explode(";;;",stripslashes($survey->questions));
 $question_counter=0;
 		foreach($s_questions as $question)
 		{
@@ -149,7 +150,7 @@ $question_counter=0;
 			if($question_items[0]=="Text")
 			{
 			?>
-				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) echo strip_tags($_POST["survey_question_".$question_counter]);?>" type="text" class="form-control survey-field border-input"  placeholder="I'm what you need :)"/>
+				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION['test'] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION['test'];?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
 			<?php
 			}
 			else
@@ -216,10 +217,10 @@ $question_counter=0;
 		// echo $_SESSION['survey_question_'.$question_counter];
 
 		?>
+
 <?php $end_survey = count($s_questions);
 			$current_question = $_GET['question'];
 ?>
-
 	<a style="inline;<?php
 	if($_GET['question'] == '1') echo 'display:none'?>
 	" class="btn btn-default" href="./index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question -1)?>">&laquo; Previous</a>
@@ -232,7 +233,6 @@ $question_counter=0;
 	 if($current_question == $end_survey)echo 'display:none'?>
 	 "><i>question <?php echo $current_question?> of <?php echo $end_survey -1?></i></p></div>
 		<div class="clearfix"></div>
-
 <?php
 if ($current_question == $end_survey) { ?>
 <?php
