@@ -4,20 +4,13 @@
 // Find out more about our products and services on:
 // http://www.netartmedia.net
 // Released under the MIT license
-
 if(!defined('IN_SCRIPT')) die("");
-
 $id=$_REQUEST["id"];
-
 $this->check_id($id);
-
 $show_survey_form=true;
-
 $xml = simplexml_load_file($this->data_file);
-
 $nodes = $xml->xpath('//surveys/survey/id[.="'.$id.'"]/parent::*');
 $survey = $nodes[0];
-
 ?>
 <div class="container">
 <div class="block-wrap">
@@ -25,10 +18,9 @@ $survey = $nodes[0];
 
 	<?php
 	session_start();
-	if(!isset($_SESSION['test'])) { $_SESSION['test'] = []; }
+	if(!isset($_SESSION)) { $_SESSION = []; }
 	if(isset($_REQUEST["proceed_submit"]))
 	{
-
 		if($this->settings["website"]["use_captcha_images"]=="1" && ( (md5($_POST['captcha_code']) != $_SESSION['code'])|| trim($_POST['captcha_code']) == "" ) )
 		{
 			?>
@@ -41,33 +33,26 @@ $survey = $nodes[0];
 		}
 		else
 		{
-
 			if(!file_exists("data/".$survey->id))
 			{
 				if(!mkdir("data/".$survey->id))
 				{
-
 				}
 			}
-
 			$survey_result_file="data/".$survey->id."/".md5($survey->id.$this->salt)."_".time().".xml";
 			if(!file_exists($survey_result_file))
 			{
 				file_put_contents($survey_result_file, "<results></results>");
 			}
-
 			$survey_results = simplexml_load_file($survey_result_file);
 			$survey_result = $survey_results->addChild('result');
 			$survey_result->addChild('name', (isset($_POST["name"])?$this->filter_data($_POST["name"]):"") );
 			$survey_result->addChild('email', (isset($_POST["email"])?$this->filter_data($_POST["email"]):"")  );
 			$survey_result->addChild('phone', (isset($_POST["phone"])?$this->filter_data($_POST["phone"]):"") );
-
 			$s_questions=explode(";;;",stripslashes($survey->questions));
 			$question_counter=0;
-
 			$survey_data="";
 			$survey_email="";
-
 			foreach($s_questions as $question)
 			{
 				$question_items=explode("---",$question);
@@ -76,13 +61,8 @@ $survey = $nodes[0];
 				$survey_email.=$question_items[1].": ".(isset($_POST["survey_question_".$question_counter])?$this->filter_data($_POST["survey_question_".$question_counter]):"")."\n";
 				$question_counter++;
 			}
-
 			$survey_result->addChild('data', $survey_data);
-
-
 			$survey_results->asXML($survey_result_file);
-
-
 			?>
 			<br/>
 			<h2 class="custom-color"><?php echo $this->texts["survey_thank_you"];?></h2>
@@ -90,7 +70,6 @@ $survey = $nodes[0];
 			<br/>
 			<br/>
 			<?php
-
 			if($this->settings["website"]["send_notifications"]=="1")
 			{
 				mail
@@ -100,7 +79,6 @@ $survey = $nodes[0];
 					$survey_email
 				);
 			}
-
 			$show_survey_form=false;
 		}
 	}
@@ -111,12 +89,11 @@ $survey = $nodes[0];
 		<i><?php echo $survey->description;?></i>
 	<?php
 	}
-
 	$s_questions=explode(";;;",stripslashes($survey->questions));
 	if($show_survey_form)
 	{
 	?>
-		<form action="<?php if($_GET['question'] == count($s_questions)) echo 'index.php'?>" method="post" enctype="multipart/form-data">
+		<form action="<?php ($_GET['question'] == count($s_questions)) ? 'index.php' : 'survey2.php'?>" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="page" value="survey"/>
 		<?php if($_GET['question'] == count($s_questions)) {  ?>
 		<input type="hidden" name="proceed_submit" value="1"/>
@@ -146,25 +123,23 @@ $question_counter=0;
 			<div class="survey-question custom-color"><?php echo ($question_counter+1);?>. <?php echo $question_items[1]?></div>
 
 			<?php
-
 			if($question_items[0]=="Text")
 			{
 			?>
-				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION['test'] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION['test'];?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
+				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION['text'] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION['text'];?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
 			<?php
 			}
 			else
 			if($question_items[0]=="Text area")
 			{
 			?>
-				<textarea name="survey_question_<?php echo $question_counter;?>" class="form-control survey-field border-input"><?php if(isset($_POST["survey_question_".$question_counter])) echo strip_tags($_POST["survey_question_".$question_counter]);?></textarea>
+				<textarea name="survey_question_<?php echo $question_counter;?>" class="form-control survey-field border-input"><?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION['textarea'] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION['textarea'];?></textarea>
 			<?php
 			}
 			else
 			if($question_items[0]=="Drop down")
 			{
 				echo '<select required name="survey_question_'.$question_counter.'" class="form-control border-input survey-field">';
-
 				if(trim($question_items[2])!="")
 				{
 					$possible_values=explode("@@@",$question_items[2]);
@@ -173,7 +148,6 @@ $question_counter=0;
 						echo '<option '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"selected":"").'>'.$value.'</option>';
 					}
 				}
-
 				echo '</select>';
 			}
 			else
@@ -205,19 +179,10 @@ $question_counter=0;
 
 			<br/>
 		<?php
-
 		}
 		$question_counter++;
-		}
-
-		// if(isset($_POST["survey_question_".$question_counter])) {
-		// 	$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
-		// }
-		//
-		// echo $_SESSION['survey_question_'.$question_counter];
-
-		?>
-
+  }
+?>
 <?php $end_survey = count($s_questions);
 			$current_question = $_GET['question'];
 ?>
@@ -233,11 +198,14 @@ $question_counter=0;
 	 if($current_question == $end_survey)echo 'display:none'?>
 	 "><i>question <?php echo $current_question?> of <?php echo $end_survey -1?></i></p></div>
 		<div class="clearfix"></div>
+    <input type="submit" value="submit">
 <?php
+//print_r($_POST);
+if(isset($_POST["survey_question_2"])) $_SESSION["survey_question_2"] = $_POST["survey_question_2"];
+print_r($_SESSION);
 if ($current_question == $end_survey) { ?>
 <?php
 if($survey->anonymous == "0") {
-
 ?>
 			<hr/>
 
