@@ -93,7 +93,7 @@ $survey = $nodes[0];
 	if($show_survey_form)
 	{
 	?>
-		<form action="<?php ($_GET['question'] == count($s_questions)) ? 'index.php' : 'survey2.php'?>" method="post" enctype="multipart/form-data">
+		<form action="<?php ($_GET['question'] == count($s_questions)) ? 'index.php' : ''?>" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="page" value="survey"/>
 		<?php if($_GET['question'] == count($s_questions)) {  ?>
 		<input type="hidden" name="proceed_submit" value="1"/>
@@ -110,15 +110,16 @@ $survey = $nodes[0];
 		<br/>
 
 		<?php
-$question_counter=0;
+		$question_counter=0;
 		foreach($s_questions as $question)
 		{
 			if(trim($question)=="") continue;
 			$question_items=explode("---",$question);
 			if(sizeof($question_items) != 3) continue;
 			?>
-		<?php if($_GET['question'] == $question_counter+1){ ?>
-
+		<?php if($_GET['question'] == $question_counter+1){
+      //$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
+      ?>
 
 			<div class="survey-question custom-color"><?php echo ($question_counter+1);?>. <?php echo $question_items[1]?></div>
 
@@ -126,14 +127,14 @@ $question_counter=0;
 			if($question_items[0]=="Text")
 			{
 			?>
-				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION['text'] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION['text'];?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
+				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION["survey_question_".$question_counter];?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
 			<?php
 			}
 			else
 			if($question_items[0]=="Text area")
 			{
 			?>
-				<textarea name="survey_question_<?php echo $question_counter;?>" class="form-control survey-field border-input"><?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION['textarea'] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION['textarea'];?></textarea>
+				<textarea name="survey_question_<?php echo $question_counter;?>" class="form-control survey-field border-input"><?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION["survey_question_".$question_counter];?></textarea>
 			<?php
 			}
 			else
@@ -147,6 +148,7 @@ $question_counter=0;
 					{
 						echo '<option '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"selected":"").'>'.$value.'</option>';
 					}
+					$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 				}
 				echo '</select>';
 			}
@@ -160,6 +162,7 @@ $question_counter=0;
 					{
 						echo '<input type="checkbox" value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class="survey-check"/> '.$value.'';
 					}
+					$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 				}
 			}
 			else
@@ -173,6 +176,7 @@ $question_counter=0;
 						echo '<input type="radio" required value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class=""/> '.$value.' &nbsp;&nbsp;';
 					}
 				}
+				$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 			}
 			?>
 			<div class="clearfix"></div>
@@ -182,27 +186,35 @@ $question_counter=0;
 		}
 		$question_counter++;
   }
+      //print_r($_SESSION);
 ?>
 <?php $end_survey = count($s_questions);
 			$current_question = $_GET['question'];
 ?>
-	<a style="inline;<?php
+	<input id="previous_button" type="button" value="&laquo; Previous" style="inline;<?php
 	if($_GET['question'] == '1') echo 'display:none'?>
-	" class="btn btn-default" href="./index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question -1)?>">&laquo; Previous</a>
-	<a style="inline;<?php
+	" class="btn btn-default">
+
+	<input id="next_button" type="button" value="<?php $next_finish = ($current_question != $end_survey-1) ? 'Next' : 'Finish'; echo $next_finish?> &raquo;" style="inline;<?php
 	 if($current_question == $end_survey) echo 'display:none'?>
-	 " class="btn btn-default" href="./index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question +1)?>">
-	 <?php $next_finish = ($current_question != $end_survey-1) ? 'Next' : 'Finish'; echo $next_finish?>
-	 &raquo;</a>
+	 " class="btn btn-default"/>
+
+	 <script>
+	 	let previous = document.getElementById("previous_button");
+	 	let next = document.getElementById("next_button");
+	 	previous.addEventListener("click", function(){
+	 		location.href = "index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question -1)?>";
+	 	});
+	 	next.addEventListener("click", function(){
+	 		location.href = "index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question +1)?>";
+	 	});
+	 </script>
+
 	<div><p style="float:right;<?php
 	 if($current_question == $end_survey)echo 'display:none'?>
 	 "><i>question <?php echo $current_question?> of <?php echo $end_survey -1?></i></p></div>
 		<div class="clearfix"></div>
-    <input type="submit" value="submit">
 <?php
-//print_r($_POST);
-if(isset($_POST["survey_question_2"])) $_SESSION["survey_question_2"] = $_POST["survey_question_2"];
-print_r($_SESSION);
 if ($current_question == $end_survey) { ?>
 <?php
 if($survey->anonymous == "0") {
@@ -252,12 +264,10 @@ if($survey->anonymous == "0") {
 		<div class="clearfix"></div>
 		<br/>
 		</form>
-
 <?php
 }
 }
 ?>
-
 </div>
 </div>
 <?php
