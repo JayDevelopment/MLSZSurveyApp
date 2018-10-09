@@ -130,20 +130,20 @@ $survey = $nodes[0];
 			if($question_items[0]=="Text")
 			{
 			?>
-				<input id="sq0" name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION["survey_question_".$question_counter];?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
+				<input id="<?php echo $question_counter;?>" name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); /*echo $_SESSION["survey_question_".$question_counter];*/?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
 			<?php
 			}
 			else
 			if($question_items[0]=="Text area")
 			{
 			?>
-				<textarea name="survey_question_<?php echo $question_counter;?>" class="form-control survey-field border-input"><?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION["survey_question_".$question_counter];?></textarea>
+				<textarea id="<?php echo $question_counter;?>" name="survey_question_<?php echo $question_counter;?>" class="form-control survey-field border-input"><?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION["survey_question_".$question_counter];?></textarea>
 			<?php
 			}
 			else
 			if($question_items[0]=="Drop down")
 			{
-				echo '<select name="survey_question_'.$question_counter.'" class="form-control border-input survey-field">';
+				echo '<select id="'.$question_counter.'"'.'name="survey_question_'.$question_counter.'" class="form-control border-input survey-field">';
 				if(trim($question_items[2])!="")
 				{
 					$possible_values=explode("@@@",$question_items[2]);
@@ -163,7 +163,7 @@ $survey = $nodes[0];
 					$possible_values=explode("@@@",$question_items[2]);
 					foreach($possible_values as $value)
 					{
-						echo '<input type="checkbox" value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class="survey-check"/> '.$value.'';
+						echo '<input id="'.$question_counter.'"'.'type="checkbox" value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class="survey-check"/> '.$value.'';
 					}
 					$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 				}
@@ -176,7 +176,7 @@ $survey = $nodes[0];
 					$possible_values=explode("@@@",$question_items[2]);
 					foreach($possible_values as $value)
 					{
-						echo '<input type="radio" value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class=""/> '.$value.' &nbsp;&nbsp;';
+						echo '<input id="'.$question_counter.'"'.'type="radio" value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class=""/> '.$value.' &nbsp;&nbsp;';
 					}
 					$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 				}
@@ -190,7 +190,7 @@ $survey = $nodes[0];
 		}
 		$question_counter++;
   }
-      print_r($_SESSION);
+      //print_r($_SESSION);
 			//print_r($_POST);
 ?>
 <?php $end_survey = count($s_questions);
@@ -209,7 +209,7 @@ $survey = $nodes[0];
 <script>
 let previous = document.getElementById('previous_button');
 let next = document.getElementById('next_button');
-let text = document.getElementById('sq0');
+let text = document.getElementById('0');
 previous.addEventListener('click', function() {
  	text.value = localStorage.getItem("text");
 });
@@ -217,6 +217,7 @@ next.addEventListener('click', function() {
 	localStorage.setItem("text", text.value);
 });
 console.log(localStorage);
+text.value = localStorage['text'];
 </script>
 
 	<div><p style="float:right;<?php
