@@ -17,7 +17,10 @@ $survey = $nodes[0];
 
 
 	<?php
-	session_start();
+	// ini_set('display_errors', 1);
+	// ini_set('display_startup_errors', 1);
+	// error_reporting(E_ALL);
+
 	if(!isset($_SESSION)) { $_SESSION = []; }
 	if(isset($_REQUEST["proceed_submit"]))
 	{
@@ -127,7 +130,7 @@ $survey = $nodes[0];
 			if($question_items[0]=="Text")
 			{
 			?>
-				<input required name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION["survey_question_".$question_counter];?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
+				<input id="sq0" name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION["survey_question_".$question_counter];?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
 			<?php
 			}
 			else
@@ -140,7 +143,7 @@ $survey = $nodes[0];
 			else
 			if($question_items[0]=="Drop down")
 			{
-				echo '<select required name="survey_question_'.$question_counter.'" class="form-control border-input survey-field">';
+				echo '<select name="survey_question_'.$question_counter.'" class="form-control border-input survey-field">';
 				if(trim($question_items[2])!="")
 				{
 					$possible_values=explode("@@@",$question_items[2]);
@@ -173,10 +176,11 @@ $survey = $nodes[0];
 					$possible_values=explode("@@@",$question_items[2]);
 					foreach($possible_values as $value)
 					{
-						echo '<input type="radio" required value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class=""/> '.$value.' &nbsp;&nbsp;';
+						echo '<input type="radio" value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class=""/> '.$value.' &nbsp;&nbsp;';
 					}
+					$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 				}
-				$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
+
 			}
 			?>
 			<div class="clearfix"></div>
@@ -186,29 +190,34 @@ $survey = $nodes[0];
 		}
 		$question_counter++;
   }
-      //print_r($_SESSION);
+      print_r($_SESSION);
+			//print_r($_POST);
 ?>
 <?php $end_survey = count($s_questions);
 			$current_question = $_GET['question'];
 ?>
-	<input id="previous_button" type="button" value="&laquo; Previous" style="inline;<?php
+	<input formaction="index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question -1)?>"
+	id="previous_button" type="submit" value="&laquo; Previous" style="inline;<?php
 	if($_GET['question'] == '1') echo 'display:none'?>
 	" class="btn btn-default">
 
-	<input id="next_button" type="button" value="<?php $next_finish = ($current_question != $end_survey-1) ? 'Next' : 'Finish'; echo $next_finish?> &raquo;" style="inline;<?php
+	<input formaction="index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question +1)?>"
+	id="next_button" type="submit" value="<?php $next_finish = ($current_question != $end_survey-1) ? 'Next' : 'Finish'; echo $next_finish?> &raquo;" style="inline;<?php
 	 if($current_question == $end_survey) echo 'display:none'?>
 	 " class="btn btn-default"/>
 
-	 <script>
-	 	let previous = document.getElementById("previous_button");
-	 	let next = document.getElementById("next_button");
-	 	previous.addEventListener("click", function(){
-	 		location.href = "index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question -1)?>";
-	 	});
-	 	next.addEventListener("click", function(){
-	 		location.href = "index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question +1)?>";
-	 	});
-	 </script>
+<script>
+let previous = document.getElementById('previous_button');
+let next = document.getElementById('next_button');
+let text = document.getElementById('sq0');
+previous.addEventListener('click', function() {
+ 	text.value = localStorage.getItem("text");
+});
+next.addEventListener('click', function() {
+	localStorage.setItem("text", text.value);
+});
+console.log(localStorage);
+</script>
 
 	<div><p style="float:right;<?php
 	 if($current_question == $end_survey)echo 'display:none'?>
