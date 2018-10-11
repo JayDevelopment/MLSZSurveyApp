@@ -17,15 +17,99 @@ $survey = $nodes[0];
 
 
 	<?php
+function show_text($question_items, $question_counter) {
+	echo '<input id="',$question_counter,' name="survey_question_', $question_counter,'" value="" type="text" class="form-control survey-field border-input"  placeholder=""/>';
+}
+function show_textarea($question_items, $question_counter) {
+	echo '<textarea id="',$question_counter,' name="survey_question_', $question_counter,'" value="" class="form-control survey-field border-input"></textarea>';
+}
+function show_checkbox($question_items, $question_counter) {
+	if(trim($question_items[2])!="")
+	{
+		$possible_values=explode("@@@",$question_items[2]);
+		foreach($possible_values as $value)
+		{
+			echo '
+			<input id="'.
+			$question_counter.
+			'"'.
+			'type="checkbox" value="'.
+			$value.
+			'"'.
+			'name="survey_question_'.
+			$question_counter.
+			'" '.
+			(isset($_POST["survey_question_".
+			$question_counter])&&$_POST["survey_question_".
+			$question_counter]==$value?"checked":"").
+			' class="survey-check"/> '.
+			$value.
+			''.
+			'<br>';
+		}
+		// More testing
+		//$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
+	}
+	echo '
+	<br>
+	<textarea style="float:center;width:55%;margin:0em 5em 0em 1em;padding:1em 1em">Jegyzetek:</textarea>';
+}
+function show_radio($question_items, $question_counter) {
+	if(trim($question_items[2])!="")
+	{
+		$possible_values=explode("@@@",$question_items[2]);
+		foreach($possible_values as $value)
+		{
+			echo '
+			<input id="'.
+			$question_counter.
+			'"'.
+			'type="radio" value="'.
+			$value.
+			'" name="survey_question_'.
+			$question_counter.'" '.
+			(isset($_POST["survey_question_".
+			$question_counter])&&$_POST["survey_question_".
+			$question_counter]==$value?"checked":"").
+			' class=""/> '.
+			$value.
+			' &nbsp;&nbsp;';
+		}
+		//$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
+	}
+	echo '
+	<br>
+	<textarea style="float:center;width:55%;margin:1.4em 5em 0em 0em;padding:1em 1em">Jegyzetek:</textarea>';
+}
+function show_select($question_items, $question_counter) {
+	echo '<select id="', $question_counter, '" name="survey_question_', $question_counter, '" class="form-control border-input survey-field">';
+	if(trim($question_items[2])!="")
+	{
+		//The @@@ is because of how the data is stored in the XML
+		$possible_values=explode("@@@",$question_items[2]);
+		foreach($possible_values as $value)
+		{
+			$isSelected = (isset($_SESSION["survey_question_".$question_counter]) && $_SESSION["survey_question_".$question_counter]==$value);
+			echo '<option ',($isSelected?'selected':''),'>',$value,'</option>';
+		}
+		//$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
+	}
+	echo '</select>';
+}
+
 	// ini_set('display_errors', 1);
 	// ini_set('display_startup_errors', 1);
 	// error_reporting(E_ALL);
 
-	if(!isset($_SESSION)) { $_SESSION = []; }
-	if(isset($_REQUEST["proceed_submit"]))
+	//if(!isset($_SESSION)) { $_SESSION = []; }
+
+	if(!empty($_POST))
 	{
-		if($this->settings["website"]["use_captcha_images"]=="1" && ( (md5($_POST['captcha_code']) != $_SESSION['code'])|| trim($_POST['captcha_code']) == "" ) )
+		if($this->settings["website"]["use_captcha_images"]=="1" &&
+		 ( (md5($_POST['captcha_code']) != $_SESSION['code'])||
+		  trim($_POST['captcha_code']) == "" ) )
 		{
+			if($_GET['question'] == count($s_questions)) {
 			?>
 			<h2 class="custom-color"><?php echo $this->texts["wrong_captcha"];?></h2>
 			<br/>
@@ -33,6 +117,7 @@ $survey = $nodes[0];
 			document.getElementById("captcha_code").focus();
 			</script>
 			<?php
+		}
 		}
 		else
 		{
@@ -52,6 +137,7 @@ $survey = $nodes[0];
 			$survey_result->addChild('name', (isset($_POST["name"])?$this->filter_data($_POST["name"]):"") );
 			$survey_result->addChild('email', (isset($_POST["email"])?$this->filter_data($_POST["email"]):"")  );
 			$survey_result->addChild('phone', (isset($_POST["phone"])?$this->filter_data($_POST["phone"]):"") );
+
 			$s_questions=explode(";;;",stripslashes($survey->questions));
 			$question_counter=0;
 			$survey_data="";
@@ -60,8 +146,13 @@ $survey = $nodes[0];
 			{
 				$question_items=explode("---",$question);
 				if(sizeof($question_items) != 3) continue;
-				$survey_data.=$question_items[1]."###".(isset($_POST["survey_question_".$question_counter])?$this->filter_data($_POST["survey_question_".$question_counter]):"")."@@@";
-				$survey_email.=$question_items[1].": ".(isset($_POST["survey_question_".$question_counter])?$this->filter_data($_POST["survey_question_".$question_counter]):"")."\n";
+				$survey_data.=$question_items[1].
+				"###".(isset($_POST["survey_question_".
+				$question_counter])?$this->filter_data($_POST["survey_question_".$question_counter]):"")."@@@";
+				$survey_email.=$question_items[1].": ".
+				(isset($_POST["survey_question_".
+				$question_counter])?$this->filter_data($_POST["survey_question_".
+				$question_counter]):"")."\n";
 				$question_counter++;
 			}
 			$survey_result->addChild('data', $survey_data);
@@ -96,10 +187,11 @@ $survey = $nodes[0];
 	if($show_survey_form)
 	{
 	?>
-		<form action="<?php ($_GET['question'] == count($s_questions)) ? 'index.php' : ''?>" method="post" enctype="multipart/form-data">
+		<form action="<?php
+		($_GET['question'] == count($s_questions)) ? 'index.php' : ''
+		?>" method="post" enctype="multipart/form-data">
 		<input type="hidden" name="page" value="survey"/>
 		<?php if($_GET['question'] == count($s_questions)) {  ?>
-		<input type="hidden" name="proceed_submit" value="1"/>
 	<?php } ?>
 		<input type="hidden" name="id" value="<?php echo $id;?>"/>
 
@@ -113,74 +205,43 @@ $survey = $nodes[0];
 		<br/>
 
 		<?php
+		//Looping through the questions, which come from an XML file stored in /data
 		$question_counter=0;
 		foreach($s_questions as $question)
 		{
 			if(trim($question)=="") continue;
-			$question_items=explode("---",$question);
+			$question_items = explode("---",$question);
 			if(sizeof($question_items) != 3) continue;
 			?>
-		<?php if($_GET['question'] == $question_counter+1){
-      //$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
+		<?php
+		// This is so just one question appears per page
+			if($_GET['question'] == $question_counter+1){
+      // This is me testing
+			//$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
       ?>
 
 			<div class="survey-question custom-color"><?php echo ($question_counter+1);?>. <?php echo $question_items[1]?></div>
 
 			<?php
-			if($question_items[0]=="Text")
-			{
-			?>
-				<input id="<?php echo $question_counter;?>" name="survey_question_<?php echo $question_counter;?>" value="<?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); /*echo $_SESSION["survey_question_".$question_counter];*/?>" type="text" class="form-control survey-field border-input"  placeholder=""/>
-			<?php
-			}
-			else
-			if($question_items[0]=="Text area")
-			{
-			?>
-				<textarea id="<?php echo $question_counter;?>" name="survey_question_<?php echo $question_counter;?>" class="form-control survey-field border-input"><?php if(isset($_POST["survey_question_".$question_counter])) $_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]); echo $_SESSION["survey_question_".$question_counter];?></textarea>
-			<?php
-			}
-			else
-			if($question_items[0]=="Drop down")
-			{
-				echo '<select id="'.$question_counter.'"'.'name="survey_question_'.$question_counter.'" class="form-control border-input survey-field">';
-				if(trim($question_items[2])!="")
-				{
-					$possible_values=explode("@@@",$question_items[2]);
-					foreach($possible_values as $value)
-					{
-						echo '<option '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"selected":"").'>'.$value.'</option>';
-					}
-					$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
-				}
-				echo '</select>';
-			}
-			else
-			if($question_items[0]=="Checkbox")
-			{
-				if(trim($question_items[2])!="")
-				{
-					$possible_values=explode("@@@",$question_items[2]);
-					foreach($possible_values as $value)
-					{
-						echo '<input id="'.$question_counter.'"'.'type="checkbox" value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class="survey-check"/> '.$value.'';
-					}
-					$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
-				}
-			}
-			else
-			if($question_items[0]=="Radio button")
-			{
-				if(trim($question_items[2])!="")
-				{
-					$possible_values=explode("@@@",$question_items[2]);
-					foreach($possible_values as $value)
-					{
-						echo '<input id="'.$question_counter.'"'.'type="radio" value="'.$value.'" name="survey_question_'.$question_counter.'" '.(isset($_POST["survey_question_".$question_counter])&&$_POST["survey_question_".$question_counter]==$value?"checked":"").' class=""/> '.$value.' &nbsp;&nbsp;';
-					}
-					$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
-				}
-
+			// $question_items[0] is where the type of input is stored
+			// Saving text to "text" is easier, too.
+			//echo 'actual type which is show and processing: ', $question_items[0];
+			switch ($question_items[0]) {
+				case 'Text':
+					show_text($question_items, $question_counter);//separate codes because átláthatatlan :)
+				break;
+				case 'Text area':
+					show_textarea($question_items, $question_counter);//but it is text too
+				break;
+				case 'Checkbox':
+					show_checkbox($question_items, $question_counter);
+				break;
+				case 'Radio button':
+					show_radio($question_items, $question_counter);
+				break;
+				case 'Drop down':
+					show_select($question_items, $question_counter);
+				break;
 			}
 			?>
 			<div class="clearfix"></div>
@@ -188,36 +249,52 @@ $survey = $nodes[0];
 			<br/>
 		<?php
 		}
+		if (!empty($_POST["survey_question_".$question_counter])) {
+			//echo '<br>type: ', $question_items[0], ' saveKey: ', " survey_question_".$question_counter, ' saveVal: ', $_POST["survey_question_".$question_counter];
+			if(isset($_POST["survey_question_".$question_counter])) {
+				$_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]);
+			}
+		}//
 		$question_counter++;
-  }
+  }  // Right now, I am testing with Javascript localStorage, not PHP $_SESSION
       //print_r($_SESSION);
 			//print_r($_POST);
+			//var_dump($_SESSION);
 ?>
 <?php $end_survey = count($s_questions);
 			$current_question = $_GET['question'];
 ?>
-	<input formaction="index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question -1)?>"
-	id="previous_button" type="submit" value="&laquo; Previous" style="inline;<?php
-	if($_GET['question'] == '1') echo 'display:none'?>
-	" class="btn btn-default">
+<input formaction="index.php?page=survey&id=<?php
+echo $survey->id?>&question=<?php
+echo ($current_question -1)?>"
+id="previous_button" type="submit" value="&laquo; Előző" style="inline;<?php
+if($_GET['question'] == '1') echo 'display:none'?>
+" class="btn btn-default">
 
-	<input formaction="index.php?page=survey&id=<?php echo $survey->id?>&question=<?php echo ($current_question +1)?>"
-	id="next_button" type="submit" value="<?php $next_finish = ($current_question != $end_survey-1) ? 'Next' : 'Finish'; echo $next_finish?> &raquo;" style="inline;<?php
-	 if($current_question == $end_survey) echo 'display:none'?>
-	 " class="btn btn-default"/>
+<input formaction="index.php?page=survey&id=<?php
+echo $survey->id?>&question=<?php
+echo ($current_question +1)?>"
+id="next_button" type="submit" value="<?php
+$next_finish = ($current_question != $end_survey-1) ? 'Következő' : 'Befejez'; echo $next_finish?> &raquo;" style="inline;<?php
+ if($current_question == $end_survey) echo 'display:none'?>
+ " class="btn btn-default"/>
 
 <script>
 let previous = document.getElementById('previous_button');
 let next = document.getElementById('next_button');
-let text = document.getElementById('0');
+<!--setting up for a forloop, testing-->
+let id = document.getElementById('0');
 previous.addEventListener('click', function() {
- 	text.value = localStorage.getItem("text");
+	localStorage.setItem("value", id.value);
+ 	id.value = localStorage.getItem("value");
 });
 next.addEventListener('click', function() {
-	localStorage.setItem("text", text.value);
+	localStorage.setItem("value", id.value);
+	id.value = localStorage.getItem("value");
 });
 console.log(localStorage);
-text.value = localStorage['text'];
+id.value = localStorage['value'];
+id4.value = localStorage['value4'];
 </script>
 
 	<div><p style="float:right;<?php
@@ -235,19 +312,25 @@ if($survey->anonymous == "0") {
 			<br/>
 			<br/>
 
-			<div class="survey-question custom-color"><?php echo $this->texts["name"];?>(*)</div>
+			<div class="survey-question custom-color"><?php
+			echo $this->texts["name"];?>(*)</div>
 
-			<input class="form-control survey-field" id="name" <?php if(isset($_POST["name"])) echo "value=\"".strip_tags($_POST["name"])."\"";?> name="name" placeholder="" type="text" required/>
+			<input class="form-control survey-field" id="name" <?php
+			if(isset($_POST["name"])) echo "value=\"".strip_tags($_POST["name"])."\"";?> name="name" placeholder="" type="text" required/>
 			<br/>
 
-			<div class="survey-question custom-color"><?php echo $this->texts["email"];?>(*)</div>
-			<input class="form-control survey-field" id="email" <?php if(isset($_POST["email"])) echo "value=\"".strip_tags($_POST["email"])."\"";?> name="email" placeholder="example@domain.com" type="email" required/>
+			<div class="survey-question custom-color"><?php
+			echo $this->texts["email"];?>(*)</div>
+			<input class="form-control survey-field" id="email" <?php
+			if(isset($_POST["email"])) echo "value=\"".strip_tags($_POST["email"])."\"";?> name="email" placeholder="example@domain.com" type="email" required/>
 
 			<br/>
 
 
-			<div class="survey-question custom-color"><?php echo $this->texts["phone"];?></div>
-			<input class="form-control survey-field" id="phone" <?php if(isset($_POST["phone"])) echo "value=\"".strip_tags($_POST["phone"])."\"";?> name="phone" placeholder="" type="text"/>
+			<div class="survey-question custom-color"><?php
+			echo $this->texts["phone"];?></div>
+			<input class="form-control survey-field" id="phone" <?php
+			if(isset($_POST["phone"])) echo "value=\"".strip_tags($_POST["phone"])."\"";?> name="phone" placeholder="" type="text"/>
 
 			<div class="clearfix"></div>
 
@@ -262,14 +345,16 @@ if($survey->anonymous == "0") {
 		?>
 			<img src="include/sec_image.php" width="150" height="30"/>
 			<br/>
-			<input placeholder="" class="form-control survey-field" id="captcha_code" <?php if(isset($_POST["captcha_code"])) echo "value=\"".strip_tags($_POST["captcha_code"])."\"";?> name="captcha_code" type="text" required/>
+			<input placeholder="" class="form-control survey-field" id="captcha_code" <?php
+			if(isset($_POST["captcha_code"])) echo "value=\"".strip_tags($_POST["captcha_code"])."\"";?> name="captcha_code" type="text" required/>
 
 		<?php
 	}
 		?>
 		<br/>
 
-		<button type="submit" class="btn btn-lg custom-back-color"><?php echo $this->texts["submit"];?></button>
+		<button type="submit" class="btn btn-lg custom-back-color"><?php
+		echo $this->texts["submit"];?></button>
 
 		<div class="clearfix"></div>
 		<br/>
