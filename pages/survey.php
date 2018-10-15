@@ -15,13 +15,12 @@ $survey = $nodes[0];
 <div class="container">
 <div class="block-wrap">
 
-
 	<?php
 function show_text($question_items, $question_counter) {
-	echo '<input id="',$question_counter,' name="survey_question_', $question_counter,'" value="" type="text" class="form-control survey-field border-input"  placeholder=""/>';
+	echo '<br><input id="',$question_counter,'" name="survey_question_', $question_counter,'" value="',$_SESSION["survey_question_".$question_counter],'" type="text" class="form-control survey-field border-input"  placeholder=""/><br>';
 }
 function show_textarea($question_items, $question_counter) {
-	echo '<textarea id="',$question_counter,' name="survey_question_', $question_counter,'" value="" class="form-control survey-field border-input"></textarea>';
+	echo '<br><textarea id="',$question_counter,'" name="survey_question_', $question_counter,'" value="',$_SESSION["survey_question_".$question_counter],'" class="form-control survey-field border-input">'.$_SESSION["survey_question_".$question_counter].'</textarea><br>';
 }
 function show_checkbox($question_items, $question_counter) {
 	if(trim($question_items[2])!="")
@@ -29,7 +28,9 @@ function show_checkbox($question_items, $question_counter) {
 		$possible_values=explode("@@@",$question_items[2]);
 		foreach($possible_values as $value)
 		{
+			$isChecked = (isset($_SESSION["survey_question_".$question_counter]) && $_SESSION["survey_question_".$question_counter]==$value);
 			echo '
+			<br>
 			<input id="'.
 			$question_counter.
 			'"'.
@@ -39,20 +40,17 @@ function show_checkbox($question_items, $question_counter) {
 			'name="survey_question_'.
 			$question_counter.
 			'" '.
-			(isset($_POST["survey_question_".
-			$question_counter])&&$_POST["survey_question_".
-			$question_counter]==$value?"checked":"").
+			($isChecked?'checked':'').
 			' class="survey-check"/> '.
 			$value.
 			''.
 			'<br>';
 		}
-		// More testing
-		//$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 	}
 	echo '
 	<br>
-	<textarea style="float:center;width:55%;margin:0em 5em 0em 1em;padding:1em 1em">Jegyzetek:</textarea>';
+	<br>
+	<textarea name="survey_question_textarea_',$question_counter,'" style="float:center;width:55%;margin:0em 5em 0em 1em;padding:1em 1em" placeholder="Jegyzetek">'.$_SESSION["survey_question_textarea_".$question_counter].'</textarea>';
 }
 function show_radio($question_items, $question_counter) {
 	if(trim($question_items[2])!="")
@@ -60,29 +58,28 @@ function show_radio($question_items, $question_counter) {
 		$possible_values=explode("@@@",$question_items[2]);
 		foreach($possible_values as $value)
 		{
+			$isChecked = (isset($_SESSION["survey_question_".$question_counter]) && $_SESSION["survey_question_".$question_counter]==$value);
 			echo '
+			<br>
 			<input id="'.
 			$question_counter.
 			'"'.
 			'type="radio" value="'.
 			$value.
-			'" name="survey_question_'.
-			$question_counter.'" '.
-			(isset($_POST["survey_question_".
-			$question_counter])&&$_POST["survey_question_".
-			$question_counter]==$value?"checked":"").
+			'" name="survey_question_'.$question_counter.'" '.
+			($isChecked?'checked':'').
 			' class=""/> '.
 			$value.
+			'<br>'.
 			' &nbsp;&nbsp;';
 		}
-		//$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 	}
 	echo '
 	<br>
-	<textarea style="float:center;width:55%;margin:1.4em 5em 0em 0em;padding:1em 1em">Jegyzetek:</textarea>';
+	<textarea name="survey_question_textarea_',$question_counter,'" style="float:center;width:55%;margin:1.4em 5em 0em 0em;padding:1em 1em" placeholder="Jegyzetek">'.$_SESSION["survey_question_textarea_".$question_counter].'</textarea>';
 }
 function show_select($question_items, $question_counter) {
-	echo '<select id="', $question_counter, '" name="survey_question_', $question_counter, '" class="form-control border-input survey-field">';
+	echo '<br><select id="', $question_counter, '" name="survey_question_', $question_counter, '" class="form-control border-input survey-field">';
 	if(trim($question_items[2])!="")
 	{
 		//The @@@ is because of how the data is stored in the XML
@@ -92,16 +89,15 @@ function show_select($question_items, $question_counter) {
 			$isSelected = (isset($_SESSION["survey_question_".$question_counter]) && $_SESSION["survey_question_".$question_counter]==$value);
 			echo '<option ',($isSelected?'selected':''),'>',$value,'</option>';
 		}
-		//$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
 	}
-	echo '</select>';
+	echo '</select><br>';
 }
 
 	// ini_set('display_errors', 1);
 	// ini_set('display_startup_errors', 1);
 	// error_reporting(E_ALL);
 
-	//if(!isset($_SESSION)) { $_SESSION = []; }
+	if(!isset($_SESSION)) { $_SESSION = []; }
 
 	if(!empty($_POST))
 	{
@@ -109,15 +105,13 @@ function show_select($question_items, $question_counter) {
 		 ( (md5($_POST['captcha_code']) != $_SESSION['code'])||
 		  trim($_POST['captcha_code']) == "" ) )
 		{
-			if($_GET['question'] == count($s_questions)) {
 			?>
-			<h2 class="custom-color"><?php echo $this->texts["wrong_captcha"];?></h2>
+			<!-- <h2 class="custom-color"><?php //echo $this->texts["wrong_captcha"];?></h2> -->
 			<br/>
 			<script>
 			document.getElementById("captcha_code").focus();
 			</script>
 			<?php
-		}
 		}
 		else
 		{
@@ -212,26 +206,21 @@ function show_select($question_items, $question_counter) {
 			if(trim($question)=="") continue;
 			$question_items = explode("---",$question);
 			if(sizeof($question_items) != 3) continue;
-			?>
-		<?php
 		// This is so just one question appears per page
 			if($_GET['question'] == $question_counter+1){
-      // This is me testing
-			//$_SESSION["survey_question_".$question_counter] = $_POST["survey_question_".$question_counter];
       ?>
 
 			<div class="survey-question custom-color"><?php echo ($question_counter+1);?>. <?php echo $question_items[1]?></div>
 
 			<?php
 			// $question_items[0] is where the type of input is stored
-			// Saving text to "text" is easier, too.
 			//echo 'actual type which is show and processing: ', $question_items[0];
 			switch ($question_items[0]) {
 				case 'Text':
-					show_text($question_items, $question_counter);//separate codes because átláthatatlan :)
+					show_text($question_items, $question_counter);//separate code
 				break;
 				case 'Text area':
-					show_textarea($question_items, $question_counter);//but it is text too
+					show_textarea($question_items, $question_counter);// but it is text too
 				break;
 				case 'Checkbox':
 					show_checkbox($question_items, $question_counter);
@@ -254,11 +243,17 @@ function show_select($question_items, $question_counter) {
 			if(isset($_POST["survey_question_".$question_counter])) {
 				$_SESSION["survey_question_".$question_counter] = strip_tags($_POST["survey_question_".$question_counter]);
 			}
-		}//
+		}
+		if (!empty($_POST["survey_question_textarea_".$question_counter])) {
+			if(isset($_POST["survey_question_textarea_".$question_counter])) {
+				$_SESSION["survey_question_textarea_".$question_counter] = strip_tags($_POST["survey_question_textarea_".$question_counter]);
+			}
+		}
 		$question_counter++;
-  }  // Right now, I am testing with Javascript localStorage, not PHP $_SESSION
+  }
       //print_r($_SESSION);
 			//print_r($_POST);
+			//var_dump($_POST);
 			//var_dump($_SESSION);
 ?>
 <?php $end_survey = count($s_questions);
@@ -278,24 +273,6 @@ id="next_button" type="submit" value="<?php
 $next_finish = ($current_question != $end_survey-1) ? 'Következő' : 'Befejez'; echo $next_finish?> &raquo;" style="inline;<?php
  if($current_question == $end_survey) echo 'display:none'?>
  " class="btn btn-default"/>
-
-<script>
-let previous = document.getElementById('previous_button');
-let next = document.getElementById('next_button');
-<!--setting up for a forloop, testing-->
-let id = document.getElementById('0');
-previous.addEventListener('click', function() {
-	localStorage.setItem("value", id.value);
- 	id.value = localStorage.getItem("value");
-});
-next.addEventListener('click', function() {
-	localStorage.setItem("value", id.value);
-	id.value = localStorage.getItem("value");
-});
-console.log(localStorage);
-id.value = localStorage['value'];
-id4.value = localStorage['value4'];
-</script>
 
 	<div><p style="float:right;<?php
 	 if($current_question == $end_survey)echo 'display:none'?>
@@ -350,6 +327,8 @@ if($survey->anonymous == "0") {
 
 		<?php
 	}
+	$_POST = $_SESSION;
+	var_dump($_POST);
 		?>
 		<br/>
 
