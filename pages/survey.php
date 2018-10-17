@@ -17,34 +17,20 @@ $survey = $nodes[0];
 
 	<?php
 function show_text($question_items, $question_counter) {
-	echo '<br><input id="',$question_counter,'" name="survey_question_', $question_counter,'" value="',$_SESSION["survey_question_".$question_counter],'" type="text" class="form-control survey-field border-input"  placeholder=""/><br>';
+	echo '<br><input id="',$question_counter,'" name="survey_question_', $question_counter,'" value="',$_SESSION["survey_question_".$question_counter],'" type="text" class="form-control survey-field border-input" placeholder="" required/><br>';
 }
 function show_textarea($question_items, $question_counter) {
-	echo '<br><textarea id="',$question_counter,'" name="survey_question_', $question_counter,'" value="',$_SESSION["survey_question_".$question_counter],'" class="form-control survey-field border-input">'.$_SESSION["survey_question_".$question_counter].'</textarea><br>';
+	echo '<br><textarea id="',$question_counter,'" name="survey_question_', $question_counter,'" value="',$_SESSION["survey_question_".$question_counter],'" class="form-control survey-field border-input" required>'.$_SESSION["survey_question_".$question_counter].'</textarea><br>';
 }
 function show_checkbox($question_items, $question_counter) {
+	//print_r($_SESSION);
 	if(trim($question_items[2])!="")
 	{
 		$possible_values=explode("@@@",$question_items[2]);
-		foreach($possible_values as $value)
+		foreach($possible_values as $n=>$value)
 		{
-			$isChecked = (isset($_SESSION["survey_question_".$question_counter]) && $_SESSION["survey_question_".$question_counter]==$value);
-			echo '
-			<br>
-			<input id="'.
-			$question_counter.
-			'"'.
-			'type="checkbox" value="'.
-			$value.
-			'"'.
-			'name="survey_question_'.
-			$question_counter.
-			'" '.
-			($isChecked?'checked':'').
-			' class="survey-check"/> '.
-			$value.
-			''.
-			'<br>';
+			$isChecked = (isset($_SESSION["survey_question_".$question_counter]) && $_SESSION["survey_question_".$question_counter][$n]==1);
+			echo "<br><input class=\"survey-check\" id=\"{$question_counter}\" type=\"checkbox\" name=\"survey_question[{$n}]\"   value=\"1\" {$isChecked}> {$value} <br>";
 		}
 	}
 	echo '
@@ -68,7 +54,7 @@ function show_radio($question_items, $question_counter) {
 			$value.
 			'" name="survey_question_'.$question_counter.'" '.
 			($isChecked?'checked':'').
-			' class=""/> '.
+			' class="" required /> '.
 			$value.
 			'<br>'.
 			' &nbsp;&nbsp;';
@@ -79,7 +65,7 @@ function show_radio($question_items, $question_counter) {
 	<textarea name="survey_question_textarea_',$question_counter,'" style="float:center;width:55%;margin:1.4em 5em 0em 0em;padding:1em 1em" placeholder="Jegyzetek">'.$_SESSION["survey_question_textarea_".$question_counter].'</textarea>';
 }
 function show_select($question_items, $question_counter) {
-	echo '<br><select id="', $question_counter, '" name="survey_question_', $question_counter, '" class="form-control border-input survey-field">';
+	echo '<br><select id="', $question_counter, '" name="survey_question_', $question_counter, '" class="form-control border-input survey-field" required>';
 	if(trim($question_items[2])!="")
 	{
 		//The @@@ is because of how the data is stored in the XML
@@ -91,6 +77,9 @@ function show_select($question_items, $question_counter) {
 		}
 	}
 	echo '</select><br>';
+	echo '
+	<br>
+	<textarea name="survey_question_textarea_',$question_counter,'" style="float:center;width:55%;margin:0em 5em 0em 1em;padding:1em 1em" placeholder="Jegyzetek">'.$_SESSION["survey_question_textarea_".$question_counter].'</textarea>';
 }
 
 	// ini_set('display_errors', 1);
@@ -238,6 +227,26 @@ function show_select($question_items, $question_counter) {
 			<br/>
 		<?php
 		}
+		// FOR LATER
+		// foreach($_SESSION["survey_question"] as $question_counter=>$question_item){
+		// 		foreach($question_item as $answer_type=>$answer){
+		//
+		// 			$_POST["survey_question"][$question_counter][$answer_type] = $answer;
+		// 		}
+		// }
+
+
+//print_r($_POST);
+
+		// if (!empty($_POST["survey_question_".$question_counter])) {
+		// 	foreach($_POST["survey_question"][$question_counter] as $answer_type=>$answer){
+		// 			$_SESSION["survey_question"][$question_counter][$answer_type] = $answer;
+		// 	}
+		// 	//echo '<br>type: ', $question_items[0], ' saveKey: ', " survey_question_".$question_counter, ' saveVal: ', $_POST["survey_question_".$question_counter];
+		// 	// if(isset($_POST["survey_question"][$question_counter]["simple"])) {
+		// 	// 	$_SESSION["survey_question"][$question_counter]["simple"] = strip_tags($_POST["survey_question_".$question_counter]);
+		// 	// }
+		// }
 		if (!empty($_POST["survey_question_".$question_counter])) {
 			//echo '<br>type: ', $question_items[0], ' saveKey: ', " survey_question_".$question_counter, ' saveVal: ', $_POST["survey_question_".$question_counter];
 			if(isset($_POST["survey_question_".$question_counter])) {
@@ -251,8 +260,6 @@ function show_select($question_items, $question_counter) {
 		}
 		$question_counter++;
   }
-      //print_r($_SESSION);
-			//print_r($_POST);
 			//var_dump($_POST);
 			//var_dump($_SESSION);
 ?>
@@ -327,8 +334,7 @@ if($survey->anonymous == "0") {
 
 		<?php
 	}
-	$_POST = $_SESSION;
-	var_dump($_POST);
+
 		?>
 		<br/>
 
