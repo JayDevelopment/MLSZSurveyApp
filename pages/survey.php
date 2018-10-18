@@ -15,7 +15,11 @@ $survey = $nodes[0];
 <div class="container">
 <div class="block-wrap">
 
-	<?php
+<?php
+$s_questions=explode(";;;",stripslashes($survey->questions));
+$end_survey = count($s_questions);
+$current_question = $_GET['question'];
+
 function show_text($question_items, $question_counter) {
 	echo '<br><input id="',$question_counter,'" name="survey_question_', $question_counter,'" value="',$_SESSION["survey_question_".$question_counter],'" type="text" class="form-control survey-field border-input" placeholder="" required/><br>';
 }
@@ -166,10 +170,17 @@ function show_select($question_items, $question_counter) {
 		<i><?php echo $survey->description;?></i>
 	<?php
 	}
-	$s_questions=explode(";;;",stripslashes($survey->questions));
+	// $s_questions=explode(";;;",stripslashes($survey->questions));
 	if($show_survey_form)
 	{
 	?>
+
+	<div><p style="float:right;margin-right:7%;<?php
+	 if($current_question == $end_survey)echo 'display:none'?>
+	 "><i>question
+		<?php echo $current_question?> of
+		<?php echo $end_survey -1?></i></p></div>
+
 		<form action="<?php
 		($_GET['question'] == count($s_questions)) ? 'index.php' : ''
 		?>" method="post" enctype="multipart/form-data">
@@ -186,7 +197,6 @@ function show_select($question_items, $question_counter) {
 		<input type="hidden" name="survey_questions" id="survey_questions" value="<?php  echo $survey->questions;?>"/>
 		<br/>
 		<br/>
-
 		<?php
 		//Looping through the questions, which come from an XML file stored in /data
 		$question_counter=0;
@@ -263,9 +273,58 @@ function show_select($question_items, $question_counter) {
 			//var_dump($_POST);
 			//var_dump($_SESSION);
 ?>
-<?php $end_survey = count($s_questions);
-			$current_question = $_GET['question'];
-?>
+
+<div class="containter" style="float:right;">
+<h3 id="timerText" style="margin-left:20%;margin-bottom:5%;"><time>00:00:00</time></h4>
+<a id="start" class="btn btn-sm btn-default">start</a>
+<a id="stop" class="btn btn-sm btn-default">stop</a>
+<a id="clear" class="btn btn-sm btn-default">clear</a>
+</div>
+
+<script>
+var timerText = document.getElementById('timerText'),
+	start = document.getElementById('start'),
+	stop = document.getElementById('stop'),
+	clear = document.getElementById('clear'),
+	seconds = 0, minutes = 0, hours = 0,
+	t;
+
+function add() {
+	seconds++;
+	if (seconds >= 60) {
+			seconds = 0;
+			minutes++;
+			if (minutes >= 60) {
+					minutes = 0;
+					hours++;
+			}
+	}
+
+	timerText.textContent = (hours ? (hours > 9 ? hours : "0" + hours) : "00") + ":" + (minutes ? (minutes > 9 ? minutes : "0" + minutes) : "00") + ":" + (seconds > 9 ? seconds : "0" + seconds);
+
+	timer();
+}
+function timer() {
+	t = setTimeout(add, 1000);
+}
+timer();
+
+
+/* Start button */
+start.onclick = timer;
+
+/* Stop button */
+stop.onclick = function() {
+	clearTimeout(t);
+}
+
+/* Clear button */
+clear.onclick = function() {
+	timerText.textContent = "00:00:00";
+	seconds = 0; minutes = 0; hours = 0;
+}
+</script>
+
 <input formaction="index.php?page=survey&id=<?php
 echo $survey->id?>&question=<?php
 echo ($current_question -1)?>"
@@ -280,11 +339,7 @@ id="next_button" type="submit" value="<?php
 $next_finish = ($current_question != $end_survey-1) ? 'Következő' : 'Befejez'; echo $next_finish?> &raquo;" style="inline;<?php
  if($current_question == $end_survey) echo 'display:none'?>
  " class="btn btn-default"/>
-
-	<div><p style="float:right;<?php
-	 if($current_question == $end_survey)echo 'display:none'?>
-	 "><i>question <?php echo $current_question?> of <?php echo $end_survey -1?></i></p></div>
-		<div class="clearfix"></div>
+<div class="clearfix"></div>
 <?php
 if ($current_question == $end_survey) { ?>
 <?php
