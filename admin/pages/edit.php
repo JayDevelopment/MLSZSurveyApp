@@ -159,13 +159,10 @@ if($show_add_form)
 					<?php if(isset($_POST['survey_type_'.$line_counter])) $question_items[0] = $_POST['survey_type_'.$line_counter]; ?>
 					<input id="survey_type_<?php echo $line_counter;?>" name="survey_type_<?php echo $line_counter;?>" value="<?php $value = (isset($_POST['survey_type_'.$line_counter])) ? $_POST['survey_type_'.$line_counter] : $question_items[0]; echo $value;?>" class="form-control border-input"/>
 				</td>
-				<td><a onclick="upNdown('up');" id="up_arrow" class="btn btn-default" style="font-size:2rem;color:black">&uarr;</a></td>
-				<td><a onclick="upNdown('down');" id="down_arrow" class="btn btn-default" style="font-size:2rem;color:black">&darr;</a></td>
 				<td>
 					<input value="<?php echo $question_items[1];?>" id="survey_question_<?php echo $line_counter;?>" name="survey_question_<?php echo $line_counter;?>" type="text" class="form-control border-input"  placeholder=""/>
 				</td>
 				<td>
-
 					<?php
 					if(trim($question_items[2])!="")
 					{
@@ -177,6 +174,8 @@ if($show_add_form)
 					?>
 
 				</td>
+				<td><a onclick="upNdown('up');" id="up_arrow" class="btn btn-default" style="font-size:2rem;color:black">&uarr;</a></td>
+				<td><a onclick="upNdown('down');" id="down_arrow" class="btn btn-default" style="font-size:2rem;color:black">&darr;</a></td>
 				<td align="right" valign="top">
 					<a href="javascript:RemoveLine('<?php echo $line_counter;?>','<?php echo addslashes($question);?>')"><img src="images/closeicon.png"/></a>
 				</td>
@@ -187,7 +186,7 @@ if($show_add_form)
 			//var_dump($_POST);
 			?>
 			<style>
-				 .selected {background-color: red; color: #fff;font-weight: bold};
+				 .selected {background-color: #D3D3D3; color: #fff;font-weight: bold};
 			</style>
 			<script>
 
